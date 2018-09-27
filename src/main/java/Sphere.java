@@ -11,7 +11,6 @@ public class Sphere
 	private double radius;
 	private final GLUT glut = new GLUT();
 
-
 	public Sphere(final GLAutoDrawable drawable, final double radius) {
 		super(drawable);
 		this.radius = radius;

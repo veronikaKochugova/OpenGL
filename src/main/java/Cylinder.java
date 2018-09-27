@@ -14,7 +14,6 @@ public class Cylinder
 
 	public Cylinder(final GLAutoDrawable drawable, final double radius, final double height) {
 		super(drawable);
-		gl.glRotated(60,100,0,0);
 		this.radius = radius;
 		this.height = height;
 	}

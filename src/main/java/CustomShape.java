@@ -1,4 +1,3 @@
-import com.jogamp.opengl.GL;
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
 
@@ -10,7 +9,6 @@ abstract class CustomShape {
 
 	public CustomShape(final GLAutoDrawable drawable) {
 		this.gl = drawable.getGL().getGL2();
-		//gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
 	}
 
@@ -19,6 +17,15 @@ abstract class CustomShape {
 	abstract void drawWire();
 
 	public void moveOnX(final double dx) {
+		System.out.println(this.getClass().getSimpleName() + " moved on " + dx);
 		gl.glTranslated(dx, 0, 0);
+	}
+
+	public void scale(final double x, final double y, final double z) {
+		gl.glScaled(x, y, z);
+	}
+
+	public void rotate(final double angle, final double x, final double y, final double z) {
+		gl.glRotated(angle, x, y, z);
 	}
 }
