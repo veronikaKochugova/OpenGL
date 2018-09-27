@@ -10,7 +10,7 @@ abstract class CustomShape {
 
 	public CustomShape(final GLAutoDrawable drawable) {
 		this.gl = drawable.getGL().getGL2();
-		gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+		//gl.glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		gl.glLoadIdentity();
 	}
 

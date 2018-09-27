@@ -11,6 +11,7 @@ import com.jogamp.opengl.util.gl2.GLUT;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 /**
  @author veronika K. on 26.09.18 */
@@ -40,14 +41,16 @@ public class Task1
 		final CustomShape teapot = new Teapot(drawable, 0.25);
 		final CustomShape sphere = new Sphere(drawable, 0.25);
 		teapot.moveOnX(0.5);
-		//sphere.moveOnX(-0.25);
 		teapot.drawWire();
 		sphere.moveOnX(-1);
 		sphere.drawWire();
+		//
+		drawable.getGL().getGL2().glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		final CustomShape cylinder = new Cylinder(drawable,0.25,0.25);
-		final CustomShape tetrahedro = new Tetrahedro(drawable);
 		cylinder.drawWire();
-		tetrahedro.drawWire();
+		final CustomShape tetrahedron = new Tetrahedro(drawable);
+		tetrahedron.moveOnX(-0.5);
+		tetrahedron.drawWire();
 	}
 
 	private void drawTeapot(final GLAutoDrawable drawable) {

@@ -13,6 +13,8 @@ public class Tetrahedro extends CustomShape {
 
 	public Tetrahedro(final GLAutoDrawable drawable) {
 		super(drawable);
+		gl.glRotated(45,50,50,0);
+		gl.glScaled(0.75,0.75,0.75);
 	}
 
 	@Override
