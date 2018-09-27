@@ -17,8 +17,13 @@ abstract class CustomShape {
 	abstract void drawWire();
 
 	public void moveOnX(final double dx) {
-		System.out.println(this.getClass().getSimpleName() + " moved on " + dx);
+		System.out.println(this.getClass().getSimpleName() + " moved onX " + dx);
 		gl.glTranslated(dx, 0, 0);
+	}
+
+	public void moveOnY(final double dy) {
+		System.out.println(this.getClass().getSimpleName() + " moved onY " + dy);
+		gl.glTranslated(0, dy, 0);
 	}
 
 	public void scale(final double x, final double y, final double z) {

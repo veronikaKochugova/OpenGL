@@ -6,6 +6,8 @@ import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.awt.GLCanvas;
 
 import java.awt.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.Arrays;
 
 /**
@@ -14,8 +16,8 @@ public class Task1
 	implements GLEventListener {
 
 	private static Frame mainFrame;
-	private final double DX_1 = 100.0;
-	private final double DX_2 = -70.0;
+	private static double DX = 0.0;
+	private static double DY = 0.0;
 
 	public static void main(String[] args) {
 		final GLProfile glProfile = GLProfile.get(GLProfile.GL2);
@@ -24,6 +26,24 @@ public class Task1
 		final Task1 task1 = new Task1();
 		canvas.addGLEventListener(task1);
 		canvas.setSize(400, 400);
+		canvas.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(final KeyEvent keyEvent) {
+			}
+
+			@Override
+			public void keyPressed(final KeyEvent keyEvent) {
+				DX += 100.0;
+				DY += - 70.0;
+				System.out.println("KEY " + keyEvent.getKeyChar());
+				System.out.println(DX);
+				canvas.display();
+			}
+
+			@Override
+			public void keyReleased(final KeyEvent keyEvent) {
+			}
+		});
 		mainFrame = FrameUtil.frame("Task1", Arrays.asList(canvas));
 	}
 
@@ -37,22 +57,32 @@ public class Task1
 
 	@Override
 	public void display(final GLAutoDrawable drawable) {
+		subTask1(drawable);
+		subTask2(drawable);
+	}
+
+	public void subTask1(final GLAutoDrawable drawable) {
+		drawable.getGL().getGL2().glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
 		final CustomShape teapot = new Teapot(drawable, 0.25);
 		final CustomShape sphere = new Sphere(drawable, 0.25);
-		teapot.moveOnX(DX_1/mainFrame.getWidth());
+		teapot.moveOnX(DX / mainFrame.getWidth());
+		System.out.println(DX);
 		teapot.drawWire();
-		sphere.moveOnX(DX_2/mainFrame.getWidth());
+		teapot.moveOnX(- DX / mainFrame.getWidth());
+		sphere.moveOnY(DY / mainFrame.getHeight());
 		sphere.drawWire();
-		//
-//		drawable.getGL().getGL2().glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
-//		final CustomShape cylinder = new Cylinder(drawable, 0.25, 0.25);
-//		cylinder.rotate(60, 100, 0, 0);
-//		cylinder.drawWire();
-//		final CustomShape tetrahedron = new Tetrahedron(drawable);
-//		tetrahedron.moveOnX(- 0.4);
-//		tetrahedron.rotate(45, 40, 40, 0);
-//		tetrahedron.scale(0.6, 0.6, 0.6);
-//		tetrahedron.drawWire();
+	}
+
+	public void subTask2(final GLAutoDrawable drawable) {
+		drawable.getGL().getGL2().glClear(GL.GL_COLOR_BUFFER_BIT | GL.GL_DEPTH_BUFFER_BIT);
+		final CustomShape cylinder = new Cylinder(drawable, 0.25, 0.25);
+		cylinder.rotate(60, 100, 0, 0);
+		cylinder.drawWire();
+		final CustomShape tetrahedron = new Tetrahedron(drawable);
+		tetrahedron.moveOnX(DX * 3 / mainFrame.getWidth());
+		tetrahedron.rotate(45, 40, 40, 0);
+		tetrahedron.scale(0.6, 0.6, 0.6);
+		tetrahedron.drawWire();
 	}
 
 	@Override
