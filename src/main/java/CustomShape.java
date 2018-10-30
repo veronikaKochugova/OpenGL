@@ -28,6 +28,7 @@ abstract class CustomShape {
 
 	public void scale(final double x, final double y, final double z) {
 		gl.glScaled(x, y, z);
+
 	}
 
 	public void rotate(final double angle, final double x, final double y, final double z) {

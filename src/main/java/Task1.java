@@ -57,7 +57,7 @@ public class Task1
 
 	@Override
 	public void display(final GLAutoDrawable drawable) {
-		subTask1(drawable);
+		//subTask1(drawable);
 		subTask2(drawable);
 	}
 
