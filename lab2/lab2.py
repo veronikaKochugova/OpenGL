@@ -42,7 +42,6 @@ def init():
     lighting(withSource)
 
 
-# Процедура обработки специальных клавиш
 def special_keys(key, x, y):
     global xpos
     global ypos
