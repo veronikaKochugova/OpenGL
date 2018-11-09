@@ -5,15 +5,13 @@ from PIL import Image
 import sys
 import numpy
 
-global xpos  # Величина вращения по оси x
-global ypos  # Величина вращения по оси y
-global ambient  # рассеянное освещение
+global xpos  # light source shift value on X
+global ypos  # light source shift value on Y
+global ambient  # light color
 global dAmbient
 global GREEN
 global RED
 global WHITE
-global bgColor
-global lightpos  # Положение источника освещения
 global withSource
 
 
@@ -25,34 +23,27 @@ def init():
     global GREEN
     global RED
     global WHITE
-    global bgColor
-    global lightpos
     global withSource
 
     withSource = True
     xpos = -0.8
     ypos = 0.0
     dAmbient = 1.0
-    ambient = (1.0, 1.0, 1.0, 1)  # Первые три числа цвет в формате RGB, а последнее - яркость
+
+    ambient = (1.0, 1.0, 1.0, 1)  # white
     GREEN = (0.2, 0.8, 0.0, 1)  # green
     RED = (0.8, 0.3, 0.3, 0.5)  # red
     WHITE = (1, 1, 1, 1)
-    bgColor = (0.5, 0.5, 0.5, 1.0)
-    lightpos = (0.0, 0.0, -1.0)
 
-    glClearColor(0.0, 0.0, 0.0, 1.0)  # Серый цвет для первоначальной закраски
-    gluOrtho2D(-1.0, 1.0, -1.0, 1.0)  # Определяем границы рисования по горизонтали и вертикали
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)  # Определяем текущую модель освещения
-    glEnable(GL_LIGHTING)  # Включаем освещение
-    glEnable(GL_LIGHT0)  # Включаем один источник света
-    # glLightfv(GL_SPOT_DIRECTION,GL_POSITION,lightpos)
-    glLightfv(GL_LIGHT0, GL_POSITION, lightpos)  # Определяем положение источника света
-    glEnable(GL_LIGHT0)
+    glClearColor(0.0, 0.0, 0.0, 1.0)  # grey background
+    gluOrtho2D(-1.0, 1.0, -1.0, 1.0)  # drawing border
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)  # lighting model
+    glEnable(GL_LIGHTING)  # lighting on
     lighting(withSource)
 
 
 # Процедура обработки специальных клавиш
-def specialkeys(key, x, y):
+def special_keys(key, x, y):
     global xpos
     global ypos
     # Обработчики для клавиш со стрелками
@@ -84,14 +75,15 @@ def keys(key, x, y):
     glutPostRedisplay()
 
 
-def loadTexture():
+def load_texture():
+    global image
     try:
         image = Image.open("texture.jpeg")
     except IOError as ex:
-        print('IOError: failed to open texture file')
-    textData = numpy.array(list(image.getdata()), numpy.int8)
-    textureID = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_2D, textureID)
+        print('IOError: failed to open texture file' + ex)
+    text_data = numpy.array(list(image.getdata()), numpy.int8)
+    texture_id = glGenTextures(1)
+    glBindTexture(GL_TEXTURE_2D, texture_id)
     glPixelStorei(GL_UNPACK_ALIGNMENT, 4)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
@@ -99,39 +91,37 @@ def loadTexture():
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    # glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.size[0], image.size[1],
-                 0, GL_RGB, GL_UNSIGNED_BYTE, textData)
+                 0, GL_RGB, GL_UNSIGNED_BYTE, text_data)
 
 
-def lighting(withSource):
-    global xpos
-    global ypos
-    global lightpos
-    lightpos = (xpos, ypos, -1)
+def lighting(with_source):
+    light_pos = (xpos, ypos, -1)
     # light source
-    if withSource:
+    if with_source:
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ambient)
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, ambient)
-        glTranslate(lightpos[0], lightpos[1], 0)
+        glTranslate(light_pos[0], light_pos[1], 0)
         glutSolidSphere(0.1, 30, 30)
-        #
-        glTranslate(-lightpos[0], -lightpos[1], 0)
+        # undo changes
+        glTranslate(-light_pos[0], -light_pos[1], 0)
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, (0, 0, 0, 0))
     # light
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)  # Определяем текущую модель освещения
-    glLightfv(GL_LIGHT0, GL_POSITION, lightpos)  # Определяем положение источника света
-    glEnable(GL_LIGHT0)  # Включаем один источник света
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)  # light model
+    glLightfv(GL_LIGHT0, GL_POSITION, light_pos)  # light source position
+    glEnable(GL_LIGHT0)  # light source on
 
 
 def teapot():
-    # Устанавливаем материал: рисовать с 2 сторон, рассеянное освещение, зеленый цвет
+    # Material
     glMaterialfv(GL_FRONT, GL_DIFFUSE, GREEN)
     glEnable(GL_CULL_FACE)
+    #
     glTranslatef(0.3, 0.0, 0.0)
     glRotatef(20, -1.0, 0.0, 0.0)
-    glutSolidTeapot(0.35)
     #
+    glutSolidTeapot(0.35)
+    # undo changes
     glTranslatef(-0.3, 0.0, 0.0)
     glRotatef(20, 1.0, 0.0, 0.0)
     glMaterialfv(GL_FRONT, GL_DIFFUSE, (0, 0, 0, 0))
@@ -139,16 +129,18 @@ def teapot():
 
 
 def cylinder():
+    # Material
     glMaterialfv(GL_FRONT, GL_DIFFUSE, WHITE)
+    glEnable(GL_TEXTURE_2D)
+    load_texture()
+    #
     glRotatef(250, 1, 0, 0)
     glTranslatef(0, 0, 0.5)
-    glEnable(GL_TEXTURE_2D)
     #
-    loadTexture()
-    qobj = gluNewQuadric()
-    gluQuadricTexture(qobj, GL_TRUE)
-    gluCylinder(qobj, 0.2, 0.2, 0.2, 20, 20)
-    #
+    obj = gluNewQuadric()
+    gluQuadricTexture(obj, GL_TRUE)
+    gluCylinder(obj, 0.2, 0.2, 0.2, 20, 20)
+    # undo changes
     glRotatef(250, -1, 0, 0)
     glTranslatef(0, 0, -0.5)
     glMaterialfv(GL_FRONT, GL_DIFFUSE, (0, 0, 0, 0))
@@ -156,23 +148,23 @@ def cylinder():
 
 
 def sphere():
-    global RED
-    # Устанавливаем материал: рисовать с 2 сторон, рассеянное освещение
+    # Material
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, RED)
-    glTranslatef(-0.3, 0.0, 0.0)
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
     glEnable(GL_BLEND)
-    glutSolidSphere(0.35, 30, 30)
     #
+    glTranslatef(-0.3, 0.0, 0.0)
+    #
+    glutSolidSphere(0.35, 30, 30)
+    # undo changes
     glDisable(GL_BLEND)
     glTranslatef(0.3, 0.0, 0.0)
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0, 0, 0, 0))
 
 
-# Процедура перерисовки
 def draw():
-    glClear(GL_COLOR_BUFFER_BIT)  # Очищаем экран и заливаем цветом
-    glPushMatrix()  # Сохраняем текущее положение "камеры"
+    glClear(GL_COLOR_BUFFER_BIT)  # clear screen and ad background color
+    glPushMatrix()  # save current "camera" position
     #
     teapot()
     #
@@ -182,19 +174,20 @@ def draw():
     #
     lighting(withSource)
     #
-    glPopMatrix()  # Возвращаем сохраненное положение "камеры"
-    glutSwapBuffers()  # Выводим все нарисованное в памяти на экран
+    glPopMatrix()  # return saved "camera" position
+    glutSwapBuffers()  # draw all from buffer
 
 
-# Использовать двойную буферизацию и цвета в формате RGB (Красный, Зеленый, Синий)
+# RGB
 glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB)
 glutInitWindowSize(950, 950)
 glutInitWindowPosition(450, 50)
-# Инициализация OpenGl
+# Init OpenGl
 glutInit(sys.argv)
 glutCreateWindow(b"Task 2")
 glutDisplayFunc(draw)
-glutSpecialFunc(specialkeys)
+glutSpecialFunc(special_keys)
 glutKeyboardFunc(keys)
 init()
+#
 glutMainLoop()
