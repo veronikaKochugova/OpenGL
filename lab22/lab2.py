@@ -14,6 +14,43 @@ global RED
 global WHITE
 global withSource
 
+V = [[+0.3, +0.3, +0.3],
+     [+0.3, +0.3, -0.3],
+     [+0.3, -0.3, -0.3],
+     [-0.3, -0.3, -0.3],
+     [-0.3, -0.3, +0.3],
+     [-0.3, +0.3, +0.3],
+     [+0.3, -0.3, +0.3],
+     [-0.3, +0.3, -0.3]]
+
+PLANES = [
+    (V[2], V[3], V[7], V[1]),  # 1
+    (V[6], V[2], V[1], V[0]),  # 2
+    (V[4], V[6], V[0], V[5]),  # 3
+    (V[3], V[4], V[5], V[7]),  # 4
+    (V[6], V[4], V[3], V[2]),  # 5
+    (V[5], V[0], V[1], V[7]),  # 6
+]
+
+COORDS = ([0, 0], [1, 0], [1, 1], [0, 1])
+
+WINDOW_WIDTH = 740
+WINDOW_HEIGHT = 840
+
+teapot_size = 0.35
+sphere_size = 2.0
+
+
+COLOR_R = 1
+COLOR_G = 1
+COLOR_B = 1
+
+light_x = 50.0
+light_y = 20.0
+light_z = 30.0
+
+sphere_brightness = 0.50
+
 
 def init():
     global xpos
@@ -74,6 +111,24 @@ def keys(key, x, y):
     glutPostRedisplay()
 
 
+def load_image():
+    image = Image.open("texture.jpeg")
+
+    ix = image.size[0]
+    iy = image.size[1]
+    image = image.tobytes("raw", "RGBX", 0, -1)
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+    glTexImage2D(GL_TEXTURE_2D, 0, 3, ix, iy, 0, GL_RGBA, GL_UNSIGNED_BYTE, image)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
+
+
 def load_texture():
     global image
     try:
@@ -112,35 +167,30 @@ def lighting(with_source):
 
 def teapot():
     # Material
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, GREEN)
     glEnable(GL_CULL_FACE)
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
     #
-    glTranslatef(0.3, 0.0, 0.0)
-    glRotatef(20, -1.0, 0.0, 0.0)
-    #
-    glutSolidTeapot(0.35)
+    glutSolidTeapot(teapot_size)
     # undo changes
-    glTranslatef(-0.3, 0.0, 0.0)
-    glRotatef(20, 1.0, 0.0, 0.0)
     glMaterialfv(GL_FRONT, GL_DIFFUSE, (0, 0, 0, 0))
     glDisable(GL_CULL_FACE)
 
 
-def cylinder():
+def cube():
     # Material
     glMaterialfv(GL_FRONT, GL_DIFFUSE, WHITE)
     glEnable(GL_TEXTURE_2D)
+    # load_image()
     load_texture()
     #
-    glRotatef(250, 1, 0, 0)
-    glTranslatef(0, 0, 0.5)
+    #glRotatef(250, 1, 0, 0)
+    glTranslatef(0.0, 0.5, 0.0)
     #
     obj = gluNewQuadric()
     gluQuadricTexture(obj, GL_TRUE)
-    gluCylinder(obj, 0.2, 0.2, 0.2, 20, 20)
+    gluSphere(obj, 0.2, 20, 20)
     # undo changes
-    glRotatef(250, -1, 0, 0)
-    glTranslatef(0, 0, -0.5)
+    glTranslatef(0, -0.5, 0.0)
     glMaterialfv(GL_FRONT, GL_DIFFUSE, (0, 0, 0, 0))
     glDisable(GL_TEXTURE_2D)
 
@@ -168,7 +218,7 @@ def draw():
     #
     sphere()
     #
-    cylinder()
+    cube()
     #
     lighting(withSource)
     #
