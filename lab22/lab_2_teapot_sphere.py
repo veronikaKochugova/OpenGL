@@ -96,50 +96,21 @@ def display():
     glMatrixMode(GL_MODELVIEW)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     # glLoadIdentity()
-    gluLookAt(5, 3, 5,
-              1, 0, 0,
-              0, 1, 0)
+
     glColor3f(0.8, 0.2, 0.1)
     glScalef(1.0, 1.0, 1.0)
 
-    # teapot
-    glEnable(GL_CULL_FACE)
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [1.0, 1.0, 1.0, 1.0])
-
-    glutSolidTeapot(teapot_size)
-
-
-    # glDepthMask(GL_FALSE)
-
-    glDisable(GL_CULL_FACE)
-    # glDisable(GL_BLEND)
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0, 0, 0, 0))
-
-    # sphere
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, [1.0, 1.0, 1.0, 0.5])
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-    glEnable(GL_BLEND)
-
-    glutSolidSphere(sphere_size, 20, 20)
-
-    # glDepthMask(GL_TRUE)
-    glDisable(GL_BLEND)
-    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0, 0, 0, 0))
-
     # cube
-
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, (1,1,1,1))
     glEnable(GL_TEXTURE_2D)
     glTranslatef(0.0, 0.0, -4.0)
-    #
-    # glRotatef(rotate_x, 1.0, 0.0, 0.0)
-    # glRotatef(rotate_y, 0.0, 1.0, 0.0)
-    # glRotatef(rotate_z, 0.0, 0.0, 1.0)
     load_image()
     # draw Tetrahedron
     glBegin(GL_QUADS)
     for plane in PLANES:
         for vertex, coord in zip(plane, COORDS):
             glTexCoord2f(coord[0], coord[1])
+            #glNormale()
             glVertex3f(vertex[0], vertex[1], vertex[2])
 
     glEnd()
@@ -220,7 +191,7 @@ def keys(key, x, y):
 
 
 def load_image():
-    image = Image.open("wall.png")
+    image = Image.open("texture.jpeg")
 
     ix = image.size[0]
     iy = image.size[1]
