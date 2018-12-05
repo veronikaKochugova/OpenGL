@@ -110,7 +110,7 @@ def display():
     for plane in PLANES:
         for vertex, coord in zip(plane, COORDS):
             glTexCoord2f(coord[0], coord[1])
-            #glNormale()
+            #glNormal(coord[0], coord[1])
             glVertex3f(vertex[0], vertex[1], vertex[2])
 
     glEnd()
