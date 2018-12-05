@@ -1,5 +1,6 @@
 from OpenGL.GL import *
 from OpenGL.GLU import *
+from curs.Cube import Cube
 from OpenGL.GLUT import *
 from PIL import Image
 import sys
@@ -15,6 +16,12 @@ global GREEN
 global RED
 global WHITE
 global withSource
+
+# rotation
+X_AXIS = 0.0
+Y_AXIS = 0.0
+Z_AXIS = 0.0
+
 CUBE_WIDTH = 0.5
 # V = [[+CUBE_WIDTH, +CUBE_WIDTH, +CUBE_WIDTH],
 #      [+CUBE_WIDTH, +CUBE_WIDTH, -CUBE_WIDTH],
@@ -66,10 +73,10 @@ def init():
     RED = (0.8, 0.3, 0.3, 0.5)  # red
     WHITE = (1, 1, 1, 1)
 
-    glEnable(GL_DEPTH_TEST)
-    # glDepthFunc(GL_LESS)
-    glClearColor(0.0, 0.0, 0.0, 1.0)  # grey background
-    gluOrtho2D(-1.0, 1.0, -1.0, 1.0)  # drawing border
+
+    glEnable(GL_TEXTURE_2D)
+    gluPerspective(45.0, 1, 0.1, 100.0)
+    glClearColor(0.0, 0.0, 0.0, 1.0)  # background
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)  # lighting model
     glEnable(GL_LIGHTING)  # lighting on
     lighting(withSource)
@@ -173,43 +180,48 @@ def teapot():
 
 
 def cube():
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, WHITE)
-    load_texture()
-    glEnable(GL_TEXTURE_2D)
-    # glEnableClientState(GL_TEXTURE_COORD_ARRAY)
-    # glEnableClientState(GL_VERTEX_ARRAY)
-
-    glBegin(GL_QUADS)
-    for plane in PLANES:
-        for vertex, coord in zip(plane, COORDS):
-            # glTexCoord2f(coord[0], coord[1])
-            glNormal3f(vertex[0], vertex[1], vertex[2])
-            glVertex3f(vertex[0], vertex[1], vertex[2])
-    glEnd()
-
-    # glDrawElements(GL_QUADS, 24, GL_UNSIGNED_BYTE, cubeIndices)
-    glDisableClientState(GL_VERTEX_ARRAY)
-    # glDisableClientState(GL_COLOR_ARRAY)
-    glDisable(GL_TEXTURE_2D)
+    cube = Cube()
+    cube.draw()
+    # global X_AXIS, Y_AXIS, Z_AXIS
+    # # glMaterialfv(GL_FRONT, GL_DIFFUSE, WHITE)
+    # glLoadIdentity()
+    # load_texture()
+    # glEnable(GL_TEXTURE_2D)
+    #
+    # glRotatef(X_AXIS, 1.0, 0.0, 0.0)
+    # glRotatef(Y_AXIS, 0.0, 1.0, 0.0)
+    # glRotatef(Z_AXIS, 0.0, 0.0, 1.0)
+    #
+    # glBegin(GL_QUADS)
+    # for plane in PLANES:
+    #     for vertex, coord in zip(plane, COORDS):
+    #         glTexCoord2f(coord[0], coord[1])
+    #         glNormal3f(vertex[0], vertex[1], vertex[2])
+    #         glVertex3f(vertex[0], vertex[1], vertex[2])
+    # glEnd()
+    #
+    # glDisable(GL_TEXTURE_2D)
+    # X_AXIS = X_AXIS - 0.50
+    # Z_AXIS = Z_AXIS - 0.50
 
 
 def draw():
     glClear(GL_COLOR_BUFFER_BIT)  # clear screen and ad background color
     glPushMatrix()  # save current "camera" position
-    gluLookAt(0, 0, 0, -0.5, 0.5, -2, 0, 1, 0)
+    # gluLookAt(0, 0, 0, -0.5, 0.5, -2, 0, 1, 0)
     #
     # teapot()
     #
     cube()
     #
-    # lighting(withSource)
+    lighting(withSource)
     #
     glPopMatrix()  # return saved "camera" position
     glutSwapBuffers()  # draw all from buffer
 
 
 # RGB
-glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
+glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH)
 glutInitWindowSize(950, 950)
 glutInitWindowPosition(450, 50)
 # Init OpenGl

@@ -4,7 +4,14 @@ from OpenGL.GLU import *
 from PIL import Image
 import numpy
 
-ESCAPE = '\033'
+# http://openglsamples.sourceforge.net/cube2_py.html
+
+WHITE = (1, 1, 1, 1)
+xpos = -0.8  # light source shift value on X
+ypos = 0.0  # light source shift value on Y
+ambient = WHITE  # light color
+dAmbient = 1.0
+withSource = True
 
 window = 0
 ID = 0
@@ -39,6 +46,12 @@ COORDS = ([0, 0], [CUBE_WIDTH, 0], [CUBE_WIDTH, CUBE_WIDTH], [0, CUBE_WIDTH])
 
 
 def InitGL(Width, Height):
+    global xpos
+    global ypos
+    global ambient
+    global dAmbient
+    global withSource
+
     glClearColor(0.0, 0.0, 0.0, 0.0)
     glClearDepth(1.0)
     glDepthFunc(GL_LESS)
@@ -51,30 +64,35 @@ def InitGL(Width, Height):
 
     # initialize texture mapping
     glEnable(GL_TEXTURE_2D)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
+
+    # light
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)  # lighting model
+    glEnable(GL_LIGHTING)  # lighting on
+    lighting(withSource)
 
 
-def keyPressed(*args):
-    if args[0] == ESCAPE:
-        sys.exit()
+def lighting(with_source):
+    light_pos = (xpos, ypos, -0.5)
+    # light source
+    if with_source:
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ambient)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, ambient)
+        glTranslate(light_pos[0], light_pos[1], light_pos[2])
+        glutSolidSphere(0.1, 30, 30)
+        # undo changes
+        glTranslate(-light_pos[0], -light_pos[1], 0)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, (0, 0, 0, 0))
+    # light
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)  # light model
+    glLightfv(GL_LIGHT0, GL_POSITION, light_pos)  # light source position
+    glEnable(GL_LIGHT0)  # light source on
 
 
 def DrawGLScene():
-    global X_AXIS, Y_AXIS, Z_AXIS
-    global DIRECTION
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
-
     glLoadIdentity()
+
     glTranslatef(0.0, 0.0, -6.0)
-
-    glRotatef(X_AXIS, 1.0, 0.0, 0.0)
-    glRotatef(Y_AXIS, 0.0, 1.0, 0.0)
-    glRotatef(Z_AXIS, 0.0, 0.0, 1.0)
-
-    #        glBindTexture(GL_TEXTURE_2D, ID)
 
     # Draw Cube (multiple quads)
     glBegin(GL_QUADS)
@@ -85,9 +103,7 @@ def DrawGLScene():
             glVertex3f(vertex[0], vertex[1], vertex[2])
     glEnd()
 
-    X_AXIS = X_AXIS - 0.30
-    Z_AXIS = Z_AXIS - 0.30
-
+    lighting(False)
     glutSwapBuffers()
 
 
@@ -115,19 +131,13 @@ def load_texture():
 
 
 def main():
-    global window
-    global ID
-
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH)
     glutInitWindowSize(640, 480)
     glutInitWindowPosition(200, 200)
-
-    window = glutCreateWindow('OpenGL Python Textured Cube')
+    glutCreateWindow('OpenGL Python Textured Cube')
 
     glutDisplayFunc(DrawGLScene)
-    glutIdleFunc(DrawGLScene)
-    glutKeyboardFunc(keyPressed)
     InitGL(640, 480)
     load_texture()
     glutMainLoop()
