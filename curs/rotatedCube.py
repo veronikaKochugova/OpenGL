@@ -2,55 +2,34 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from PIL import Image
+from curs.constants import *
+from curs.Cube import *
+from curs.NotConvex import *
 import numpy
 
 # http://openglsamples.sourceforge.net/cube2_py.html
 
-WHITE = (1, 1, 1, 1)
-xpos = -0.8  # light source shift value on X
-ypos = 0.0  # light source shift value on Y
+l_pos_x = -0.8  # light source shift value on X
+l_pos_y = 0.0  # light source shift value on Y
+p_pos_x = -0.8  # polygon shift value on X
+p_pos_y = 0.0  # polygon shift value on Y
 ambient = WHITE  # light color
-dAmbient = 1.0
 withSource = True
 
-window = 0
-ID = 0
-
-# rotation
-X_AXIS = 0.0
-Y_AXIS = 0.0
-Z_AXIS = 0.0
-
-DIRECTION = 1
-CUBE_WIDTH = 0.5
-
-V = [[+CUBE_WIDTH, +CUBE_WIDTH, +CUBE_WIDTH],
-     [+CUBE_WIDTH, +CUBE_WIDTH, -CUBE_WIDTH],
-     [+CUBE_WIDTH, -CUBE_WIDTH, -CUBE_WIDTH],
-     [-CUBE_WIDTH, -CUBE_WIDTH, -CUBE_WIDTH],
-     [-CUBE_WIDTH, -CUBE_WIDTH, +CUBE_WIDTH],
-     [-CUBE_WIDTH, +CUBE_WIDTH, +CUBE_WIDTH],
-     [+CUBE_WIDTH, -CUBE_WIDTH, +CUBE_WIDTH],
-     [-CUBE_WIDTH, +CUBE_WIDTH, -CUBE_WIDTH]]
-
-PLANES = [
-    (V[2], V[3], V[7], V[1]),  # 1
-    (V[6], V[2], V[1], V[0]),  # 2
-    (V[4], V[6], V[0], V[5]),  # 3
-    (V[3], V[4], V[5], V[7]),  # 4
-    (V[6], V[4], V[3], V[2]),  # 5
-    (V[5], V[0], V[1], V[7]),  # 6
-]
-
-COORDS = ([0, 0], [CUBE_WIDTH, 0], [CUBE_WIDTH, CUBE_WIDTH], [0, CUBE_WIDTH])
+global cube
+global not_convex
 
 
 def InitGL(Width, Height):
-    global xpos
-    global ypos
     global ambient
     global dAmbient
     global withSource
+
+    global cube
+    global not_convex
+
+    cube = Cube()
+    not_convex = NotConvex()
 
     glClearColor(0.0, 0.0, 0.0, 0.0)
     glClearDepth(1.0)
@@ -59,11 +38,8 @@ def InitGL(Width, Height):
     glShadeModel(GL_SMOOTH)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(45.0, float(Width) / float(Height), 0.1, 100.0)
+    gluPerspective(50, float(Width) / float(Height), 0.1, 100.0)
     glMatrixMode(GL_MODELVIEW)
-
-    # initialize texture mapping
-    glEnable(GL_TEXTURE_2D)
 
     # light
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)  # lighting model
@@ -72,12 +48,13 @@ def InitGL(Width, Height):
 
 
 def lighting(with_source):
-    light_pos = (xpos, ypos, -0.5)
+    light_pos = (l_pos_x, l_pos_y, 2)
     # light source
     if with_source:
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ambient)
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, ambient)
         glTranslate(light_pos[0], light_pos[1], light_pos[2])
+        #
         glutSolidSphere(0.1, 30, 30)
         # undo changes
         glTranslate(-light_pos[0], -light_pos[1], 0)
@@ -88,58 +65,71 @@ def lighting(with_source):
     glEnable(GL_LIGHT0)  # light source on
 
 
-def DrawGLScene():
+def special_keys(key, x, y):
+    global p_pos_x
+    global p_pos_y
+    # Обработчики для клавиш со стрелками
+    if key == GLUT_KEY_UP:  # Клавиша вверх
+        p_pos_y += 0.2  # Уменьшаем угол вращения по оси Х
+    if key == GLUT_KEY_DOWN:  # Клавиша вниз
+        p_pos_y -= 0.2  # Увеличиваем угол вращения по оси Х
+    if key == GLUT_KEY_LEFT:  # Клавиша влево
+        p_pos_x -= 0.2  # Уменьшаем угол вращения по оси Y
+    if key == GLUT_KEY_RIGHT:  # Клавиша вправо
+        p_pos_x += 0.2  # Увеличиваем угол вращения по оси Y
+    not_convex.position(p_pos_x, p_pos_y, 0)
+    glutPostRedisplay()  # Вызываем процедуру перерисовки
+
+
+def keys(key, x, y):
+    global withSource
+    global tmp
+    global l_pos_x
+    global l_pos_y
+
+    if ord(key) == ord("w"):  # Клавиша вверх
+        l_pos_y += 0.2  # Уменьшаем угол вращения по оси Х
+    if ord(key) == ord("s"):  # Клавиша вниз
+        l_pos_y -= 0.2  # Увеличиваем угол вращения по оси Х
+    if ord(key) == ord("a"):  # Клавиша влево
+        l_pos_x -= 0.2  # Уменьшаем угол вращения по оси Y
+    if ord(key) == ord("d"):  # Клавиша вправо
+        l_pos_x += 0.2  # Увеличиваем угол вращения по оси Y
+    if ord(key) == ord("q"):
+        withSource = not withSource
+        print("Source")
+
+    glutPostRedisplay()
+
+
+def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
-    glTranslatef(0.0, 0.0, -6.0)
-
-    # Draw Cube (multiple quads)
-    glBegin(GL_QUADS)
-    for plane in PLANES:
-        for vertex, coord in zip(plane, COORDS):
-            glTexCoord2f(coord[0], coord[1])
-            glNormal3f(vertex[0], vertex[1], vertex[2])
-            glVertex3f(vertex[0], vertex[1], vertex[2])
-    glEnd()
-
-    lighting(False)
+    glTranslatef(0.0, 0.0, -4.0)
+    gluLookAt(0, 0, 0, -0.2, -0.4, -1, 0, 1, 0)
+    #
+    cube.draw()
+    #
+    not_convex.draw()
+    #
+    lighting(withSource)
     glutSwapBuffers()
 
 
-def load_texture():
-    global image
-    try:
-        image = Image.open("texture.jpeg")
-    except IOError as ex:
-        print('IOError: failed to open texture file' + ex)
-    text_data = numpy.array(list(image.getdata()), numpy.int8)
-    texture_id = glGenTextures(1)
-    glBindTexture(GL_TEXTURE_2D, texture_id)
-    #
-    glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-
-    #
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 4)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image.size[0], image.size[1], 0, GL_RGB, GL_UNSIGNED_BYTE, text_data)
-
-
 def main():
+    window_size = [1200, 900]
+    #
     glutInit(sys.argv)
     glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_ALPHA | GLUT_DEPTH)
-    glutInitWindowSize(640, 480)
-    glutInitWindowPosition(200, 200)
-    glutCreateWindow('OpenGL Python Textured Cube')
+    glutInitWindowSize(*window_size)
+    glutInitWindowPosition(250, 100)
+    glutCreateWindow('Curs')
 
-    glutDisplayFunc(DrawGLScene)
-    InitGL(640, 480)
-    load_texture()
+    glutDisplayFunc(draw)
+    glutSpecialFunc(special_keys)
+    glutKeyboardFunc(keys)
+    InitGL(*window_size)
     glutMainLoop()
 
 

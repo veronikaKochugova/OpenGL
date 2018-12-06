@@ -2,6 +2,7 @@ from OpenGL.GL import *
 from OpenGL.GLUT import *
 from OpenGL.GLU import *
 from PIL import Image
+from curs.constants import *
 import numpy
 
 CUBE_WIDTH = 0.5
@@ -38,14 +39,13 @@ class Cube:
         glMatrixMode(GL_PROJECTION)
         glLoadIdentity()
         glMatrixMode(GL_MODELVIEW)
-
         # initialize texture mapping
         glEnable(GL_TEXTURE_2D)
         self.load_texture()
 
     def draw(self):
-        glTranslatef(0.0, 0.0, -6.0)
-        # Draw Cube (multiple quads)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, WHITE)
+        glEnable(GL_TEXTURE_2D)
         glBegin(GL_QUADS)
         for plane in PLANES:
             for vertex, coord in zip(plane, COORDS):
@@ -53,7 +53,7 @@ class Cube:
                 glNormal3f(vertex[0], vertex[1], vertex[2])
                 glVertex3f(vertex[0], vertex[1], vertex[2])
         glEnd()
-        glTranslatef(0.0, 0.0, 6.0)
+        glDisable(GL_TEXTURE_2D)
 
     def load_texture(self):
         global image
@@ -66,7 +66,6 @@ class Cube:
         glBindTexture(GL_TEXTURE_2D, texture_id)
         #
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST)
-
         #
         glPixelStorei(GL_UNPACK_ALIGNMENT, 4)
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP)

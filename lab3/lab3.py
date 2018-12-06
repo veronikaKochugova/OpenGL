@@ -7,8 +7,8 @@ import numpy
 # http://openglsamples.sourceforge.net/cube2_py.html
 
 WHITE = (1, 1, 1, 1)
-xpos = -0.8  # light source shift value on X
-ypos = 0.0  # light source shift value on Y
+p_pos_x = -0.8  # light source shift value on X
+p_pos_y = 0.0  # light source shift value on Y
 ambient = WHITE  # light color
 dAmbient = 1.0
 withSource = True
@@ -89,8 +89,8 @@ def slicing():
 
 
 def InitGL(Width, Height):
-    global xpos
-    global ypos
+    global p_pos_x
+    global p_pos_y
     global ambient
     global dAmbient
     global withSource
@@ -112,7 +112,7 @@ def InitGL(Width, Height):
 
 
 def lighting(with_source):
-    light_pos = (xpos, ypos, -0.5)
+    light_pos = (p_pos_x, p_pos_y, -0.5)
     # light source
     if with_source:
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ambient)

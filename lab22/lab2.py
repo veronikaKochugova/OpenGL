@@ -5,8 +5,8 @@ from PIL import Image
 import sys
 import numpy
 
-global xpos  # light source shift value on X
-global ypos  # light source shift value on Y
+global p_pos_x  # light source shift value on X
+global p_pos_y  # light source shift value on Y
 global ambient  # light color
 global dAmbient
 global GREEN
@@ -53,8 +53,8 @@ sphere_brightness = 0.50
 
 
 def init():
-    global xpos
-    global ypos
+    global p_pos_x
+    global p_pos_y
     global ambient
     global dAmbient
     global GREEN
@@ -80,8 +80,8 @@ def init():
 
 
 def special_keys(key, x, y):
-    global xpos
-    global ypos
+    global p_pos_x
+    global p_pos_y
     # Обработчики для клавиш со стрелками
     if key == GLUT_KEY_UP:  # Клавиша вверх
         ypos += 0.2  # Уменьшаем угол вращения по оси Х
@@ -149,7 +149,7 @@ def load_texture():
 
 
 def lighting(with_source):
-    light_pos = (xpos, ypos, -1)
+    light_pos = (p_pos_x, p_pos_y, -1)
     # light source
     if with_source:
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ambient)
