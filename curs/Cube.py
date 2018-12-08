@@ -54,6 +54,7 @@ class Cube:
                 glVertex3f(vertex[0], vertex[1], vertex[2])
         glEnd()
         glDisable(GL_TEXTURE_2D)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0, 0, 0, 0))
 
     def load_texture(self):
         global image
