@@ -5,6 +5,7 @@ from PIL import Image
 import numpy
 
 # http://openglsamples.sourceforge.net/cube2_py.html
+from surface import surfaceXY, surfaceYZ, surfaceXZ
 
 WHITE = (1, 1, 1, 1)
 p_pos_x = -0.8  # light source shift value on X
@@ -24,68 +25,14 @@ Z_AXIS = 0.0
 DIRECTION = 1
 CUBE_WIDTH = 0.3
 
-V = [[+CUBE_WIDTH, +CUBE_WIDTH, +CUBE_WIDTH],
-     [+CUBE_WIDTH, +CUBE_WIDTH, -CUBE_WIDTH],
-     [+CUBE_WIDTH, -CUBE_WIDTH, -CUBE_WIDTH],
-     [-CUBE_WIDTH, -CUBE_WIDTH, -CUBE_WIDTH],
-     [-CUBE_WIDTH, -CUBE_WIDTH, +CUBE_WIDTH],
-     [-CUBE_WIDTH, +CUBE_WIDTH, +CUBE_WIDTH],
-     [+CUBE_WIDTH, -CUBE_WIDTH, +CUBE_WIDTH],
-     [-CUBE_WIDTH, +CUBE_WIDTH, -CUBE_WIDTH]]
-
-PLANES = [
-    (V[2], V[3], V[7], V[1]),  # 1
-    (V[6], V[2], V[1], V[0]),  # 2
-    (V[4], V[6], V[0], V[5]),  # 3
-    (V[3], V[4], V[5], V[7]),  # 4
-    (V[6], V[4], V[3], V[2]),  # 5
-    (V[5], V[0], V[1], V[7]),  # 6
-]
-
-COORDS = ([0, 0], [CUBE_WIDTH, 0], [CUBE_WIDTH, CUBE_WIDTH], [0, CUBE_WIDTH])
-
-
-def slicing():
-    n = 2
-    w = CUBE_WIDTH / n
-    #
-    vertices = []
-
-    def edgeFlagCallback(param1, param2):
-        pass
-
-    def beginCallback(param=None):
-        vertices = []
-
-    def vertexCallback(vertex, otherData=None):
-        vertices.append(vertex[:2])
-
-    def combineCallback(vertex, neighbors, neighborWeights, out=None):
-        out = vertex
-        return out
-
-    def endCallback(data=None):
-        pass
-
-    tess = gluNewTess()
-    gluTessProperty(tess, GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_ODD)
-    gluTessCallback(tess, GLU_TESS_EDGE_FLAG_DATA,
-                    edgeFlagCallback)  # forces triangulation of polygons (i.e. GL_TRIANGLES) rather than returning triangle fans or strips
-    gluTessCallback(tess, GLU_TESS_BEGIN, beginCallback)
-    gluTessCallback(tess, GLU_TESS_VERTEX, vertexCallback)
-    gluTessCallback(tess, GLU_TESS_COMBINE, combineCallback)
-    gluTessCallback(tess, GLU_TESS_END, endCallback)
-
-    tess = gluNewTess()
-    gluTessBeginPolygon(tess, 0)
-    for polygon in PLANES:
-        gluTessBeginContour(tess)
-        for point in polygon:
-            gluTessVertex(tess, point, point)
-        gluTessEndContour(tess)
-    gluTessEndPolygon(tess)
-    gluDeleteTess(tess)
-    return vertices
+N = 10
+PLANES = []
+PLANES.append(surfaceXY(1, 1, 0, N))
+PLANES.append(surfaceXY(1, 1, 1, N))
+PLANES.append(surfaceYZ(1, 1, 1, N))
+PLANES.append(surfaceYZ(0, 1, 1, N))
+PLANES.append(surfaceXZ(1, 1, 1, N))
+PLANES.append(surfaceXZ(1, 0, 1, N))
 
 
 def InitGL(Width, Height):
@@ -132,23 +79,36 @@ def DrawGLScene():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
-    glTranslatef(0.0, 0.0, -3.0)
+    glTranslatef(0.0, 0.0, -4.0)
+    gluLookAt(0, 0, 0, -0.2, -0.4, -1, 0, 1, 0)
 
-    vertices = slicing()
-    # Draw Cube (multiple quads)
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
     glBegin(GL_QUADS)
-    for v in vertices:
-        glVertex3f(v[0], v[1], v[2])
-    # for plane in PLANES:
-    #     for vertex, coord in zip(plane, COORDS):
-    #         glTexCoord2f(coord[0], coord[1])
-    #         glNormal3f(vertex[0], vertex[1], vertex[2])
-    #         glVertex3f(vertex[0], vertex[1], vertex[2])
+    for planes in PLANES:
+        for plane in planes:
+            for vertex in plane:
+                # glTexCoord2f(coord[0], coord[1])
+                glNormal3f(vertex[0], vertex[1], vertex[2])
+                glVertex3f(vertex[0], vertex[1], vertex[2])
     glEnd()
 
     lighting(False)
     glutSwapBuffers()
+
+
+def special_keys(key, x, y):
+    global xpos
+    global ypos
+    # Обработчики для клавиш со стрелками
+    if key == GLUT_KEY_UP:  # Клавиша вверх
+        ypos += 0.2  # Уменьшаем угол вращения по оси Х
+    if key == GLUT_KEY_DOWN:  # Клавиша вниз
+        ypos -= 0.2  # Увеличиваем угол вращения по оси Х
+    if key == GLUT_KEY_LEFT:  # Клавиша влево
+        xpos -= 0.2  # Уменьшаем угол вращения по оси Y
+    if key == GLUT_KEY_RIGHT:  # Клавиша вправо
+        xpos += 0.2  # Увеличиваем угол вращения по оси Y
+    glutPostRedisplay()  # Вызываем процедуру перерисовки
 
 
 def main():
@@ -159,6 +119,7 @@ def main():
     glutCreateWindow('Lab3')
 
     glutDisplayFunc(DrawGLScene)
+    glutSpecialFunc(special_keys)
     InitGL(640, 480)
     glutMainLoop()
 
