@@ -13,7 +13,8 @@ withSource = True
 
 smoothing = 0
 
-W = 1
+W = 2
+SLICES = 20
 
 
 def create_planes(N):
@@ -27,7 +28,7 @@ def create_planes(N):
     return PLANES
 
 
-PLANES = create_planes(10)
+PLANES = create_planes(SLICES)
 
 
 def InitGL(Width, Height):
@@ -55,14 +56,11 @@ def lighting(with_source):
 
 
 def update(P):
-    PP = create_planes(10)
+    PP = create_planes(SLICES)
     for p, pp in zip(P, PP):
         for plane, pplane in zip(p, pp):
             for v, vv in zip(plane, pplane):
                 R = W / 2
-                # x = v[0]
-                # y = v[1]
-                # z = v[2]
                 x = vv[0]
                 y = vv[1]
                 z = vv[2]
@@ -80,13 +78,13 @@ def DrawGLScene():
     glLoadIdentity()
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, GREEN)
 
-    glTranslatef(0.0, 0.0, -4.0)
+    glTranslatef(0.0, 0.0, -6.0)
     gluLookAt(0, 0, 0, -0.2, -0.4, -1, 0, 1, 0)
 
     P = PLANES
     P = update(P)
 
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+    # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
     glBegin(GL_QUADS)
     for planes in P:
         for plane in planes:
@@ -102,6 +100,10 @@ def DrawGLScene():
 
 def special_keys(key, x, y):
     global smoothing
+    if key == GLUT_KEY_UP:
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
+    if key == GLUT_KEY_DOWN:
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
     if key == GLUT_KEY_LEFT and smoothing > 0:  # Клавиша влево
         smoothing -= 0.1  # Уменьшаем угол вращения по оси Y
     if key == GLUT_KEY_RIGHT and smoothing < 1:  # Клавиша вправо
