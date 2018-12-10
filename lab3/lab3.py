@@ -8,40 +8,29 @@ import numpy
 from surface import surfaceXY, surfaceYZ, surfaceXZ
 
 WHITE = (1, 1, 1, 1)
-p_pos_x = -0.8  # light source shift value on X
-p_pos_y = 0.0  # light source shift value on Y
-ambient = WHITE  # light color
-dAmbient = 1.0
+GREEN = (0.5, 0.9, 0.0, 1)
 withSource = True
 
-window = 0
-ID = 0
+smoothing = 0
 
-# rotation
-X_AXIS = 0.0
-Y_AXIS = 0.0
-Z_AXIS = 0.0
+W = 1
 
-DIRECTION = 1
-CUBE_WIDTH = 0.3
 
-N = 10
-PLANES = []
-PLANES.append(surfaceXY(1, 1, 0, N))
-PLANES.append(surfaceXY(1, 1, 1, N))
-PLANES.append(surfaceYZ(1, 1, 1, N))
-PLANES.append(surfaceYZ(0, 1, 1, N))
-PLANES.append(surfaceXZ(1, 1, 1, N))
-PLANES.append(surfaceXZ(1, 0, 1, N))
+def create_planes(N):
+    PLANES = []
+    PLANES.append(surfaceXY(W, W, -W / 2, N))
+    PLANES.append(surfaceXY(W, W, W / 2, N))
+    PLANES.append(surfaceYZ(-W / 2, W, W, N))
+    PLANES.append(surfaceYZ(W / 2, W, W, N))
+    PLANES.append(surfaceXZ(W, W / 2, W, N))
+    PLANES.append(surfaceXZ(W, -W / 2, W, N))
+    return PLANES
+
+
+PLANES = create_planes(10)
 
 
 def InitGL(Width, Height):
-    global p_pos_x
-    global p_pos_y
-    global ambient
-    global dAmbient
-    global withSource
-
     glClearColor(0.0, 0.0, 0.0, 0.0)
     glClearDepth(1.0)
     glDepthFunc(GL_LESS)
@@ -53,38 +42,53 @@ def InitGL(Width, Height):
     glMatrixMode(GL_MODELVIEW)
 
     # light
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)  # lighting model
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, WHITE)  # lighting model
     glEnable(GL_LIGHTING)  # lighting on
     lighting(withSource)
 
 
 def lighting(with_source):
-    light_pos = (p_pos_x, p_pos_y, -0.5)
-    # light source
-    if with_source:
-        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ambient)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, ambient)
-        glTranslate(light_pos[0], light_pos[1], light_pos[2])
-        glutSolidSphere(0.1, 30, 30)
-        # undo changes
-        glTranslate(-light_pos[0], -light_pos[1], 0)
-        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, (0, 0, 0, 0))
-    # light
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient)  # light model
+    light_pos = (0, 1, 2)
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, WHITE)  # light model
     glLightfv(GL_LIGHT0, GL_POSITION, light_pos)  # light source position
     glEnable(GL_LIGHT0)  # light source on
+
+
+def update(P):
+    PP = create_planes(10)
+    for p, pp in zip(P, PP):
+        for plane, pplane in zip(p, pp):
+            for v, vv in zip(plane, pplane):
+                R = W / 2
+                # x = v[0]
+                # y = v[1]
+                # z = v[2]
+                x = vv[0]
+                y = vv[1]
+                z = vv[2]
+                new_x = x * numpy.sqrt(1 - (y * y / 2) - (z * z / 2) + (y * y * z * z / 3))
+                new_y = y * numpy.sqrt(1 - (z * z / 2) - (x * x / 2) + (z * z * x * x / 3))
+                new_z = z * numpy.sqrt(1 - (x * x / 2) - (y * y / 2) + (x * x * y * y / 3))
+                v[0] = new_x * smoothing + x * (1 - smoothing)
+                v[1] = new_y * smoothing + y * (1 - smoothing)
+                v[2] = new_z * smoothing + z * (1 - smoothing)
+    return P
 
 
 def DrawGLScene():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
+    glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, GREEN)
 
     glTranslatef(0.0, 0.0, -4.0)
     gluLookAt(0, 0, 0, -0.2, -0.4, -1, 0, 1, 0)
 
+    P = PLANES
+    P = update(P)
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
     glBegin(GL_QUADS)
-    for planes in PLANES:
+    for planes in P:
         for plane in planes:
             for vertex in plane:
                 # glTexCoord2f(coord[0], coord[1])
@@ -97,17 +101,11 @@ def DrawGLScene():
 
 
 def special_keys(key, x, y):
-    global xpos
-    global ypos
-    # Обработчики для клавиш со стрелками
-    if key == GLUT_KEY_UP:  # Клавиша вверх
-        ypos += 0.2  # Уменьшаем угол вращения по оси Х
-    if key == GLUT_KEY_DOWN:  # Клавиша вниз
-        ypos -= 0.2  # Увеличиваем угол вращения по оси Х
-    if key == GLUT_KEY_LEFT:  # Клавиша влево
-        xpos -= 0.2  # Уменьшаем угол вращения по оси Y
-    if key == GLUT_KEY_RIGHT:  # Клавиша вправо
-        xpos += 0.2  # Увеличиваем угол вращения по оси Y
+    global smoothing
+    if key == GLUT_KEY_LEFT and smoothing > 0:  # Клавиша влево
+        smoothing -= 0.1  # Уменьшаем угол вращения по оси Y
+    if key == GLUT_KEY_RIGHT and smoothing < 1:  # Клавиша вправо
+        smoothing += 0.1  # Увеличиваем угол вращения по оси Y
     glutPostRedisplay()  # Вызываем процедуру перерисовки
 
 
