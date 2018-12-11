@@ -6,7 +6,7 @@ from curs.constants import *
 import numpy
 
 CUBE_WIDTH = 0.2
-W = 0.5
+W = 0.2
 
 V = [[-W, +W, +W],  # 0
      [-W, +W, -W],  # 1
@@ -62,16 +62,15 @@ class NotConvex:
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, WHITE)
         # glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, WHITE_L)
 
-        glTranslatef(0, -W, 0)
-        glTranslatef(self.x, self.y, self.z)
-        glRotatef(self.t, 0, 1, 0)
-        glRotatef(-(self.t * 1.3), 0, 0, 1)
-
+        # glTranslatef(0, -W, 0)
+        # glTranslatef(self.x, self.y, self.z)
+        # glRotatef(self.t, 0, 1, 0)
+        # glRotatef(-(self.t * 1.3), 0, 0, 1)
+        self.rotate()
         # glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)
         glBegin(GL_TRIANGLES)
         for plane in T_PLANES:
             for vertex in plane:
-                print(vertex)
                 glNormal3f(vertex[0], vertex[1], vertex[2])
                 glVertex3f(vertex[0], vertex[1], vertex[2])
         glEnd()
@@ -85,10 +84,10 @@ class NotConvex:
         # glEnd()
 
         # undo changes
-        glTranslatef(-self.x, -self.y, -self.z)
-        glRotatef((self.t * 1.3), 0, 0, 1)
-        glRotatef(-self.t, 0, 1, 0)
-        glTranslatef(0, -CUBE_WIDTH, 0)
+        # glTranslatef(-self.x, -self.y, -self.z)
+        # glRotatef((self.t * 1.3), 0, 0, 1)
+        # glRotatef(-self.t, 0, 1, 0)
+        # glTranslatef(0, -CUBE_WIDTH, 0)
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0, 0, 0, 0))
         # glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, (0, 0, 0, 0))
 
@@ -97,3 +96,12 @@ class NotConvex:
         self.y = y
         self.z = z
         self.t = t
+
+    def rotate(self, t=0):
+        for i in range(len(V)):
+            if (i == 5 or i == 6):
+                continue
+            vertex = V[i]
+            vertex[0] += 0.1
+            vertex[1] += 0.1
+            vertex[2] += 0.1

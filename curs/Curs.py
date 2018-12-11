@@ -134,9 +134,9 @@ def draw():
     glTranslatef(0.0, 0.0, -4.0)
     gluLookAt(0, 0, 0, -0.2, -0.4, -1, 0, 1, 0)
     #
-    # surface()
+    surface()
     #
-    # cube.draw()
+    cube.draw()
     #
     not_convex.draw()
     #
