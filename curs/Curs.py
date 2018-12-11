@@ -39,7 +39,7 @@ def InitGL(Width, Height):
     t = numpy.pi / 2
     z = R * numpy.cos(t)
     x = R * numpy.sin(t)
-    not_convex.position(x, 0, z, t)
+    not_convex.position()
 
     glClearColor(0.0, 0.0, 0.0, 0.0)
     glClearDepth(1.0)
@@ -80,17 +80,14 @@ def lighting(with_source):
 def special_keys(key, x, y):
     global p_pos_x
     global p_pos_y
-    # Обработчики для клавиш со стрелками
-    if key == GLUT_KEY_LEFT:  # Клавиша влево
-        p_pos_x -= 0.1  # Уменьшаем угол вращения по оси Y
-    if key == GLUT_KEY_RIGHT:  # Клавиша вправо
-        p_pos_x += 0.1  # Увеличиваем угол вращения по оси Y
-    # t = 10 * p_pos_x
-    t = numpy.pi / 2 + p_pos_x
-    z = R * numpy.cos(t)
-    x = R * numpy.sin(t)
-    not_convex.position(x, 0, z, t * 180 / numpy.pi)
-    glutPostRedisplay()  # Вызываем процедуру перерисовки
+    if key == GLUT_KEY_LEFT:
+        p_pos_x -= 0.1
+        t = -0.05
+    if key == GLUT_KEY_RIGHT:
+        p_pos_x += 0.1
+        t = +0.05
+    not_convex.position(t)
+    glutPostRedisplay()
 
 
 def keys(key, x, y):
@@ -136,12 +133,20 @@ def draw():
     #
     surface()
     #
-    cube.draw()
+    # cube.draw()
     #
     not_convex.draw()
     #
     lighting(withSource)
     glutSwapBuffers()
+
+
+def idle():
+    t = 0.1
+    if not_convex.rotation_times >= 5:
+        not_convex.change_direction()
+    not_convex.position(t)
+    glutPostRedisplay()
 
 
 def main():
@@ -153,6 +158,7 @@ def main():
     glutInitWindowPosition(250, 100)
     glutCreateWindow('Curs')
 
+    glutIdleFunc(idle)
     glutDisplayFunc(draw)
     glutSpecialFunc(special_keys)
     glutKeyboardFunc(keys)
