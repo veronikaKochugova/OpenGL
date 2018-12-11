@@ -142,7 +142,7 @@ def draw():
 
 
 def idle():
-    t = 0.1
+    t = 0.05
     if not_convex.rotation_times >= 5:
         not_convex.change_direction()
     not_convex.position(t)

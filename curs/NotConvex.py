@@ -50,13 +50,15 @@ class NotConvex:
     def __init__(self):
         self.t = 0.0
         self.direction = 0
+        self.pos = 0
         self.is_rotated = False
         self.rotation_times = 0
         self.update()
 
     def draw(self):
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, WHITE)
-        glRotatef(self.direction, 0, 1, 0)
+        # glTranslatef(-self.pos, 1, 0, 0)
+        # glRotatef(self.direction, 0, 1, 0)
         if not self.is_rotated:
             self.rotate()
         else:
@@ -76,15 +78,18 @@ class NotConvex:
         #         glNormal3f(vertex[0], vertex[1], vertex[2])
         #         glVertex3f(vertex[0], vertex[1], vertex[2])
         # glEnd()
-        glRotatef(-self.direction, 0, 1, 0)
+        # glTranslatef(self.pos, 1, 0, 0)
+        # glRotatef(-self.direction, 0, 1, 0)
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0, 0, 0, 0))
 
     def position(self, t=0):
         self.t = t
 
     def change_direction(self):
+        # self.pos = 2 * W * self.rotation_times
         self.rotation_times = 1
         self.direction += 90
+        self.is_rotated = True
 
     def rotate(self):
         x0 = V[5][0]
