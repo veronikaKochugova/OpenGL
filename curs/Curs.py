@@ -128,7 +128,7 @@ def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
-    glTranslatef(0.0, 0.0, -4.0)
+    glTranslatef(0.0, 0.0, -8.0)
     gluLookAt(0, 0, 0, -0.2, -0.4, -1, 0, 1, 0)
     #
     surface()
@@ -136,16 +136,18 @@ def draw():
     # cube.draw()
     #
     not_convex.draw()
+    # glRotatef(-90, 0, 1, 0)
     #
     lighting(withSource)
     glutSwapBuffers()
 
 
 def idle():
-    t = 0.05
-    if not_convex.rotation_times >= 5:
-        not_convex.change_direction()
+    t = numpy.pi / 200
+    # if not_convex.rotation_times >= 5:
+    #     not_convex.change_direction()
     not_convex.position(t)
+    # if not_convex.change_direction_times < 2:
     glutPostRedisplay()
 
 
