@@ -1,8 +1,3 @@
-from OpenGL.GL import *
-from OpenGL.GLUT import *
-from OpenGL.GLU import *
-from PIL import Image
-from curs.constants import *
 from curs.Cube import *
 from curs.NotConvex import *
 import numpy
@@ -143,11 +138,8 @@ def draw():
 
 
 def idle():
-    t = numpy.pi / 200
-    # if not_convex.rotation_times >= 5:
-    #     not_convex.change_direction()
+    t = numpy.pi / 30 - 0.01 * not_convex.rotation_times
     not_convex.position(t)
-    # if not_convex.change_direction_times < 2:
     glutPostRedisplay()
 
 
