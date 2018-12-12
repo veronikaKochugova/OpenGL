@@ -5,10 +5,10 @@ import numpy
 # http://openglsamples.sourceforge.net/cube2_py.html
 
 R = 1
-l_pos_x = -0.8  # light source shift value on X
-l_pos_y = 0.0  # light source shift value on Y
+l_pos_x = 1  # light source shift value on X
+l_pos_y = 2  # light source shift value on Y
 p_pos_x = 0  # polygon shift value on X
-withSource = False
+withSource = True
 
 SURFACE_WIDTH = 10
 SURFACE = [(-SURFACE_WIDTH, -0.5, -SURFACE_WIDTH),
@@ -30,11 +30,6 @@ def InitGL(Width, Height):
 
     cube = Cube()
     not_convex = NotConvex()
-    # start position
-    t = numpy.pi / 2
-    z = R * numpy.cos(t)
-    x = R * numpy.sin(t)
-    not_convex.position()
 
     glClearColor(0.0, 0.0, 0.0, 0.0)
     glClearDepth(1.0)
@@ -47,17 +42,21 @@ def InitGL(Width, Height):
     glMatrixMode(GL_MODELVIEW)
 
     # light
+    # glLightModelfv(GL_LIGHT_MODEL_COLOR_CONTROL,GL_SINGLE_COLOR)
+    # glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, WHITE)  # lighting model
     glEnable(GL_LIGHTING)  # lighting on
+    glEnable(GL_NORMALIZE)
     lighting(withSource)
+
     draw()
 
 
 def lighting(with_source):
-    light_pos = (l_pos_x, l_pos_y, 2)
+    light_pos = (l_pos_x, l_pos_y, 1)
     # light source
     if with_source:
-        # glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, ambient)
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, WHITE)
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, WHITE)
         glTranslate(light_pos[0], light_pos[1], light_pos[2])
         #
@@ -65,9 +64,11 @@ def lighting(with_source):
         # undo changes
         glTranslate(-light_pos[0], -light_pos[1], -light_pos[2])
         glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, (0, 0, 0, 0))
-        # glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0, 0, 0, 0))
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0, 0, 0, 0))
     # light
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, WHITE)  # light model
+    # glLightfv(GL_LIGHT0, GL_SPOT_CUTOFF, 90)
+    # glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, (1,0,0))
+    glLightfv(GL_LIGHT0, GL_SPECULAR, WHITE)
     glLightfv(GL_LIGHT0, GL_POSITION, light_pos)  # light source position
     glEnable(GL_LIGHT0)  # light source on
 
@@ -112,7 +113,8 @@ def surface():
     glBegin(GL_QUADS)
     for vertex in SURFACE:
         # glTexCoord2f(coord[0], coord[1])
-        glNormal3f(vertex[0], vertex[1], vertex[2])
+        D = SURFACE_WIDTH * 2
+        glNormal3f(vertex[0] / D, vertex[1] / D, vertex[2] / D)
         glVertex3f(vertex[0], vertex[1], vertex[2])
     glEnd()
     glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0, 0, 0, 0))
@@ -123,22 +125,21 @@ def draw():
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glLoadIdentity()
 
-    glTranslatef(0.0, 0.0, -8.0)
+    glTranslatef(0.0, 0.0, -6.0)
     gluLookAt(0, 0, 0, -0.2, -0.4, -1, 0, 1, 0)
     #
     surface()
     #
-    # cube.draw()
+    cube.draw()
     #
     not_convex.draw()
-    # glRotatef(-90, 0, 1, 0)
     #
     lighting(withSource)
     glutSwapBuffers()
 
 
 def idle():
-    t = numpy.pi / 30 - 0.01 * not_convex.rotation_times
+    t = numpy.pi / 20 - 0.006 * (not_convex.unit * not_convex.rotation_limit + not_convex.rotation_times)
     not_convex.position(t)
     glutPostRedisplay()
 

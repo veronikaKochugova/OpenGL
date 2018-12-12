@@ -1,9 +1,10 @@
 from OpenGL.GL import *
 from curs.constants import *
+from PIL import Image
 import numpy
 
 W = 0.2
-N = 8
+N = 6
 
 V = [[-W, +W, +W],  # 0
      [-W, +W, -W],  # 1
@@ -55,6 +56,7 @@ class NotConvex:
         self.change_direction_times = 0
         self.unit = 1
         self.update(self.unit)
+        self.rotation_limit = N
 
     def draw(self):
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, WHITE)
@@ -68,7 +70,11 @@ class NotConvex:
         glBegin(GL_TRIANGLES)
         for plane in T_PLANES:
             for vertex in plane:
-                glNormal3f(vertex[0], vertex[1], vertex[2])
+                D = numpy.sqrt(pow(vertex[0], 2) + pow(vertex[1], 2) + pow(vertex[2], 2))
+                normale_x = vertex[0] - V[4][0]
+                normale_y = vertex[1] - V[4][1]
+                normale_z = vertex[2] - V[4][2]
+                glNormal3f(normale_x, normale_y, normale_z)
                 glVertex3f(vertex[0], vertex[1], vertex[2])
         glEnd()
 
@@ -79,7 +85,6 @@ class NotConvex:
         #         glNormal3f(vertex[0], vertex[1], vertex[2])
         #         glVertex3f(vertex[0], vertex[1], vertex[2])
         # glEnd()
-
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, (0, 0, 0, 0))
 
     def position(self, t=0):
@@ -111,6 +116,8 @@ class NotConvex:
             R = numpy.sqrt(pow(x - x0, 2) + pow(y - y0, 2))
             angle = numpy.arccos((x - x0) / R)
             new_angle = angle + self.t
+            # if i == 0 and angle >= numpy.pi / 2:
+            #     self.t += 0.005 * (self.unit * self.rotation_limit + self.rotation_times)
             if new_angle >= numpy.pi:
                 self.is_rotated = True
                 break
@@ -130,6 +137,8 @@ class NotConvex:
             y = vertex[1]
             R = numpy.sqrt(pow(x - x0, 2) + pow(y - y0, 2))
             angle = numpy.arccos((x - x0) / R)
+            if i == 0 and angle <= 2 * numpy.pi / 3:
+                self.t += 0.05
             new_angle = angle - self.t
             if new_angle <= 0:
                 self.is_rotated = True
@@ -150,6 +159,8 @@ class NotConvex:
             z = vertex[2]
             R = numpy.sqrt(pow(y - y0, 2) + pow(z - z0, 2))
             angle = numpy.arccos((z0 - z) / R)
+            if i == 0 and angle >= numpy.pi / 3:
+                self.t += 0.01
             new_angle = angle + self.t
             if new_angle >= numpy.pi:
                 self.is_rotated = True
